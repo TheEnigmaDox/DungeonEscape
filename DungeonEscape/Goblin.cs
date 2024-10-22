@@ -26,7 +26,7 @@ namespace DungeonEscape
             {
                 m_moveCounter = 0;
 
-                moveDir = (Direction)Game1.RNG.Next(0, 3);
+                moveDir = (Direction)Game1.RNG.Next(0, 4);
 
                 switch (moveDir)
                 {
