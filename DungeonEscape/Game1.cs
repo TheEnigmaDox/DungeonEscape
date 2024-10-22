@@ -1,0 +1,144 @@
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using System;
+using System.Collections.Generic;
+
+namespace DungeonEscape
+{
+    public class Game1 : Game
+    {
+        private GraphicsDeviceManager _graphics;
+        private SpriteBatch _spriteBatch;
+
+        public static readonly Random RNG = new Random();
+
+        PlayerClass player1;
+        Goblin guard;
+
+        List<Texture2D> tiles;
+        int[,] testFloor;
+
+        Map currentMap;
+
+        KeyboardState kb_curr;
+        KeyboardState kb_old;
+
+#if DEBUG
+        public static SpriteFont debugFont;
+#endif
+
+        public Game1()
+        {
+            _graphics = new GraphicsDeviceManager(this);
+            Content.RootDirectory = "Content";
+            IsMouseVisible = true;
+
+            Window.Title = "Dungeon Escape!";
+            _graphics.PreferredBackBufferWidth = 480;
+            _graphics.PreferredBackBufferHeight = 320;
+            _graphics.ApplyChanges();
+        }
+
+        protected override void Initialize()
+        {
+            // TODO: Add your initialization logic here
+
+            testFloor = new int[16, 16]
+            {
+                { 0, 0, 0, 7, 2, 2, 2, 8, 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 5, 1, 1, 1, 6, 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 7, 2, 2, 1, 1, 1, 6, 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 5, 1, 1, 1, 1, 1, 2, 2, 2, 8, 0, 7, 2, 2, 8 },
+                { 0, 5, 1, 6, 1, 1, 1, 1, 1, 1, 6, 0, 5, 3, 1, 6 },
+                { 0, 5, 1, 6, 1, 1, 1, 7, 8, 1, 6, 0, 5, 1, 1, 6 },
+                { 0, 5, 1, 8, 2, 2, 2, 5, 6, 1, 6, 0, 2, 7, 1, 6 },
+                { 7, 2, 1, 2, 2, 8, 0, 7, 2, 1, 2, 8, 0, 5, 1, 6 },
+                { 5, 1, 1, 1, 1, 6, 0, 5, 1, 1, 1, 6, 0, 5, 1, 6 },
+                { 5, 1, 1, 1, 1, 6, 0, 5, 1, 1, 1, 2, 2, 2, 1, 6 },
+                { 5, 1, 1, 1, 1, 6, 0, 5, 1, 1, 1, 1, 1, 1, 1, 6 },
+                { 5, 1, 1, 1, 1, 6, 0, 5, 1, 1, 1, 8, 2, 2, 2, 2 },
+                { 5, 1, 1, 1, 1, 6, 0, 5, 1, 1, 1, 6, 0, 0, 0, 0 },
+                { 2, 7, 2, 2, 1, 6, 0, 5, 1, 1, 1, 6, 0, 0, 0, 0 },
+                { 0, 5, 4, 1, 1, 6, 0, 2, 2, 2, 2, 2, 0, 0, 0, 0 },
+                { 0, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+            };
+
+            currentMap = new Map(testFloor);
+
+            base.Initialize();
+        }
+
+        protected override void LoadContent()
+        {
+            _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+#if DEBUG
+            debugFont = Content.Load<SpriteFont>("Fonts/Arial07");
+#endif
+
+            // TODO: use this.Content to load your game content here
+
+            player1 = new PlayerClass(new Point(14, 4), Content.Load<Texture2D>("Characters/pc"), 3, 8);
+            guard = new Goblin(new Point(5, 4), Content.Load<Texture2D>("Characters/goblin"), 3, 8);
+
+            tiles = new List<Texture2D>();
+            tiles.Add(Content.Load<Texture2D>("Tiles/void"));       //0
+            tiles.Add(Content.Load<Texture2D>("Tiles/floor"));      //1
+            tiles.Add(Content.Load<Texture2D>("Tiles/wall"));       //2
+            tiles.Add(Content.Load<Texture2D>("Tiles/stairup"));    //3
+            tiles.Add(Content.Load<Texture2D>("Tiles/stairdown"));  //4
+            tiles.Add(Content.Load<Texture2D>("Tiles/wallL"));      //5
+            tiles.Add(Content.Load<Texture2D>("Tiles/wallR"));      //6
+            tiles.Add(Content.Load<Texture2D>("Tiles/wallTL"));     //7
+            tiles.Add(Content.Load<Texture2D>("Tiles/wallTR"));     //8
+        }
+
+        protected override void Update(GameTime gameTime)
+        {
+            // TODO: Add your update logic here
+
+            kb_curr = Keyboard.GetState();
+
+            if(kb_curr.IsKeyDown(Keys.Escape))
+                this.Exit();
+
+            if(player1.LOS(guard.Position, currentMap))
+            {
+                this.Exit();
+            }
+
+            player1.UpdateMe(gameTime, currentMap, kb_curr, kb_old);
+            guard.UpdateMe(gameTime, currentMap);
+
+            kb_old = kb_curr;
+
+            base.Update(gameTime);
+        }
+
+        protected override void Draw(GameTime gameTime)
+        {
+            GraphicsDevice.Clear(Color.Black);
+
+            // TODO: Add your drawing code here
+
+            _spriteBatch.Begin();
+
+#if DEBUG
+            _spriteBatch.DrawString(debugFont,
+                _graphics.PreferredBackBufferWidth + "X" + _graphics.PreferredBackBufferHeight
+                + "\nFPS : " + (int)(1 / gameTime.ElapsedGameTime.TotalSeconds) + "ish",
+                new Vector2(270, 10), Color.White);
+#endif
+
+            currentMap.DrawMe(_spriteBatch, tiles);
+
+            player1.DrawMe(_spriteBatch, gameTime, tiles[0].Width, tiles[0].Height);
+            guard.DrawMe(_spriteBatch, gameTime, tiles[0].Width, tiles[0].Height);
+
+            _spriteBatch.End();
+
+            base.Draw(gameTime);
+        }
+    }
+}
