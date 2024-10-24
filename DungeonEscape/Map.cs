@@ -14,6 +14,14 @@ namespace DungeonEscape
         private int m_width;
         private int m_height;
 
+        public Vector2 MapSize
+        {
+            get
+            {
+                return new Vector2(m_width, m_height);
+            }
+        }
+
         public Map(int[,] floorPlan) 
         { 
             m_width = floorPlan.GetLength(0);

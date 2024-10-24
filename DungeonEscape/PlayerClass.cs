@@ -7,6 +7,14 @@ namespace DungeonEscape
 {
     internal class PlayerClass : GameActor
     {
+        public Point PlayerPos
+        {
+            get
+            {
+                return m_position;
+            }
+        }
+
         public PlayerClass(Point startPos, Texture2D txr, int frameCount, int fps)
             : base(startPos, txr, frameCount, fps)
         { 

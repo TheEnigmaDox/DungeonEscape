@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace DungeonEscape
 {
@@ -12,6 +13,7 @@ namespace DungeonEscape
         private SpriteBatch _spriteBatch;
 
         public static readonly Random RNG = new Random();
+        public static readonly Point windowSize = new Point(480, 320);
 
         PlayerClass player1;
         Goblin guard;
@@ -24,6 +26,8 @@ namespace DungeonEscape
         KeyboardState kb_curr;
         KeyboardState kb_old;
 
+        Matrix translation;
+
 #if DEBUG
         public static SpriteFont debugFont;
 #endif
@@ -35,8 +39,8 @@ namespace DungeonEscape
             IsMouseVisible = true;
 
             Window.Title = "Dungeon Escape!";
-            _graphics.PreferredBackBufferWidth = 480;
-            _graphics.PreferredBackBufferHeight = 320;
+            _graphics.PreferredBackBufferWidth = windowSize.X;
+            _graphics.PreferredBackBufferHeight = windowSize.Y;
             _graphics.ApplyChanges();
         }
 
@@ -105,15 +109,31 @@ namespace DungeonEscape
 
             if(player1.LOS(guard.Position, currentMap))
             {
+                Debug.WriteLine("Spotted!");
                 this.Exit();
             }
 
+            Debug.WriteLine(guard.Position.ToString()); 
+
             player1.UpdateMe(gameTime, currentMap, kb_curr, kb_old);
-            guard.UpdateMe(gameTime, currentMap);
+            //guard.UpdateMe(gameTime, currentMap);
 
             kb_old = kb_curr;
 
+            CalculateTranslation();
+
             base.Update(gameTime);
+        }
+
+        void CalculateTranslation()
+        {
+            var dx = currentMap.MapSize.X - player1.PlayerPos.X;
+            dx = MathHelper.Clamp(dx, -500, 500);
+
+            var dy = currentMap.MapSize.Y - player1.PlayerPos.Y;
+            dy = MathHelper.Clamp(dy, -500, 500);
+
+            translation = Matrix.CreateTranslation(dx, dy, 0f);
         }
 
         protected override void Draw(GameTime gameTime)
@@ -122,7 +142,7 @@ namespace DungeonEscape
 
             // TODO: Add your drawing code here
 
-            _spriteBatch.Begin();
+            _spriteBatch.Begin(transformMatrix: translation);
 
 #if DEBUG
             _spriteBatch.DrawString(debugFont,
@@ -134,7 +154,7 @@ namespace DungeonEscape
             currentMap.DrawMe(_spriteBatch, tiles);
 
             player1.DrawMe(_spriteBatch, gameTime, tiles[0].Width, tiles[0].Height);
-            guard.DrawMe(_spriteBatch, gameTime, tiles[0].Width, tiles[0].Height);
+            //guard.DrawMe(_spriteBatch, gameTime, tiles[0].Width, tiles[0].Height);
 
             _spriteBatch.End();
 

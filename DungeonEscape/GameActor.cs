@@ -19,7 +19,7 @@ namespace DungeonEscape
 
     internal class GameActor
     {
-        private Point m_position;
+        protected Point m_position;
         private Texture2D m_texture;
 
         private int m_frameCount;
