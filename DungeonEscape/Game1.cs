@@ -15,6 +15,8 @@ namespace DungeonEscape
         public static readonly Random RNG = new Random();
         public static readonly Point windowSize = new Point(960, 640);
 
+        Vector2 screenCenter;
+
         RenderTarget2D drawCanvas;
 
 
@@ -74,6 +76,8 @@ namespace DungeonEscape
             currentMap = new Map(testFloor);
 
             drawCanvas = new RenderTarget2D(_graphics.GraphicsDevice, 480, 320);
+
+            screenCenter = new Vector2(windowSize.X / 2, windowSize.Y / 2);
 
             base.Initialize();
         }
@@ -159,7 +163,15 @@ namespace DungeonEscape
 
             GraphicsDevice.SetRenderTarget(null);
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-            _spriteBatch.Draw(drawCanvas, (new Vector2(480, 320)-(player1.PlayerPos * tiles[0].Bounds.Size).ToVector2())/2, null, Color.White, 0, Vector2.Zero, 2, SpriteEffects.None, 0);
+            _spriteBatch.Draw(drawCanvas,
+                screenCenter - player1.PlayerPos.ToVector2(), 
+                null,
+                Color.White,
+                0, 
+                Vector2.Zero,
+                2, 
+                SpriteEffects.None,
+                1);
 
 
 #if DEBUG
