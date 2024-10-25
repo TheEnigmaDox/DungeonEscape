@@ -13,7 +13,7 @@ namespace DungeonEscape
         private SpriteBatch _spriteBatch;
 
         public static readonly Random RNG = new Random();
-        public static readonly Point windowSize = new Point(480, 320);
+        public static readonly Point windowSize = new Point(960, 640);
 
         PlayerClass player1;
         Goblin guard;
@@ -107,11 +107,11 @@ namespace DungeonEscape
             if(kb_curr.IsKeyDown(Keys.Escape))
                 this.Exit();
 
-            if(player1.LOS(guard.Position, currentMap))
-            {
-                Debug.WriteLine("Spotted!");
-                this.Exit();
-            }
+            //if(player1.LOS(guard.Position, currentMap))
+            //{
+            //    Debug.WriteLine("Spotted!");
+            //    this.Exit();
+            //}
 
             Debug.WriteLine(guard.Position.ToString()); 
 
@@ -142,7 +142,7 @@ namespace DungeonEscape
 
             // TODO: Add your drawing code here
 
-            _spriteBatch.Begin(transformMatrix: translation);
+            _spriteBatch.Begin(transformMatrix: translation, samplerState: SamplerState.PointClamp);
 
 #if DEBUG
             _spriteBatch.DrawString(debugFont,

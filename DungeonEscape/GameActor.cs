@@ -161,8 +161,15 @@ namespace DungeonEscape
 
             m_sourceRect.Y = (int)m_facing * m_sourceRect.Height;
 
-            sBatch.Draw(m_texture, new Vector2(m_position.X * tileWidth, m_position.Y * tileHeight - 4),
-                m_sourceRect, Color.White);
+            sBatch.Draw(m_texture,
+                new Vector2(m_position.X * tileWidth, m_position.Y * tileHeight - 4),
+                m_sourceRect,
+                Color.White,
+                0f,
+                Vector2.Zero,
+                2f,
+                SpriteEffects.None,
+                0f);
         }
     }
 }

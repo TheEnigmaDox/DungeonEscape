@@ -44,13 +44,19 @@ namespace DungeonEscape
                 for (int y = 0; y < m_height; y++)
                 {
                     sBatch.Draw(tiles[m_Cells[x, y]],
-                        new Vector2(x * tiles[0].Width, y * tiles[0].Height),
-                        Color.White);
+                        new Vector2(x * (tiles[0].Width * 2), y * (tiles[0].Height * 2)),
+                        null,
+                        Color.White,
+                        0f,
+                        Vector2.Zero,
+                        2f,
+                        SpriteEffects.None,
+                        0f);
 
-                    //sBatch.DrawString(Game1.debugFont,
-                    //    m_Cells[x, y].ToString(),
-                    //    new Vector2(x * 16, y * 16),
-                    //    Color.White);
+                    sBatch.DrawString(Game1.debugFont,
+                        m_Cells[x, y].ToString(),
+                        new Vector2(x * 16, y * 16),
+                        Color.White);
                 }
             }
         }
