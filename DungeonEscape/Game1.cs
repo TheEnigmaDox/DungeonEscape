@@ -15,6 +15,9 @@ namespace DungeonEscape
         public static readonly Random RNG = new Random();
         public static readonly Point windowSize = new Point(960, 640);
 
+        RenderTarget2D drawCanvas;
+
+
         PlayerClass player1;
         Goblin guard;
 
@@ -26,7 +29,7 @@ namespace DungeonEscape
         KeyboardState kb_curr;
         KeyboardState kb_old;
 
-        Matrix translation;
+        //Matrix translation;
 
 #if DEBUG
         public static SpriteFont debugFont;
@@ -69,6 +72,8 @@ namespace DungeonEscape
             };
 
             currentMap = new Map(testFloor);
+
+            drawCanvas = new RenderTarget2D(_graphics.GraphicsDevice, 480, 320);
 
             base.Initialize();
         }
@@ -120,7 +125,7 @@ namespace DungeonEscape
 
             kb_old = kb_curr;
 
-            CalculateTranslation();
+            //CalculateTranslation();
 
             base.Update(gameTime);
         }
@@ -133,7 +138,7 @@ namespace DungeonEscape
             var dy = currentMap.MapSize.Y - player1.PlayerPos.Y;
             dy = MathHelper.Clamp(dy, -500, 500);
 
-            translation = Matrix.CreateTranslation(dx, dy, 0f);
+            //translation = Matrix.CreateTranslation(dx, dy, 0f);
         }
 
         protected override void Draw(GameTime gameTime)
@@ -142,7 +147,20 @@ namespace DungeonEscape
 
             // TODO: Add your drawing code here
 
-            _spriteBatch.Begin(transformMatrix: translation, samplerState: SamplerState.PointClamp);
+            GraphicsDevice.SetRenderTarget(drawCanvas);
+            _spriteBatch.Begin();
+
+            currentMap.DrawMe(_spriteBatch, tiles);
+
+            player1.DrawMe(_spriteBatch, gameTime, tiles[0].Width, tiles[0].Height);
+            //guard.DrawMe(_spriteBatch, gameTime, tiles[0].Width, tiles[0].Height);
+
+            _spriteBatch.End();
+
+            GraphicsDevice.SetRenderTarget(null);
+            _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+            _spriteBatch.Draw(drawCanvas, (new Vector2(480, 320)-(player1.PlayerPos * tiles[0].Bounds.Size).ToVector2())/2, null, Color.White, 0, Vector2.Zero, 2, SpriteEffects.None, 0);
+
 
 #if DEBUG
             _spriteBatch.DrawString(debugFont,
@@ -150,11 +168,6 @@ namespace DungeonEscape
                 + "\nFPS : " + (int)(1 / gameTime.ElapsedGameTime.TotalSeconds) + "ish",
                 new Vector2(270, 10), Color.White);
 #endif
-
-            currentMap.DrawMe(_spriteBatch, tiles);
-
-            player1.DrawMe(_spriteBatch, gameTime, tiles[0].Width, tiles[0].Height);
-            //guard.DrawMe(_spriteBatch, gameTime, tiles[0].Width, tiles[0].Height);
 
             _spriteBatch.End();
 

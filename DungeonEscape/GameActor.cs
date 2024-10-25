@@ -167,7 +167,7 @@ namespace DungeonEscape
                 Color.White,
                 0f,
                 Vector2.Zero,
-                2f,
+                1f,
                 SpriteEffects.None,
                 0f);
         }

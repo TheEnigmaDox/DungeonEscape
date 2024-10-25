@@ -44,12 +44,12 @@ namespace DungeonEscape
                 for (int y = 0; y < m_height; y++)
                 {
                     sBatch.Draw(tiles[m_Cells[x, y]],
-                        new Vector2(x * (tiles[0].Width * 2), y * (tiles[0].Height * 2)),
+                        new Vector2(x * (tiles[0].Width), y * (tiles[0].Height)),
                         null,
                         Color.White,
                         0f,
                         Vector2.Zero,
-                        2f,
+                        1f,
                         SpriteEffects.None,
                         0f);
 
