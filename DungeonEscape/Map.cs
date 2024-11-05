@@ -37,6 +37,20 @@ namespace DungeonEscape
             }
         }
 
+        public Vector2 UpdateMe(Vector2 canvasPos)
+        {
+            // 16, 16 -> 2, 6 (x32) -> 64, 192  -> -48 (3/4), -192
+            // 24, 24 -> 3, 9 (x32) -> 96, 224
+
+            Vector2 minClampData = MapData.levelOneMinClamp;
+            Vector2 maxClampData = MapData.levelOneMaxClamp;
+
+            canvasPos.X = MathHelper.Clamp(canvasPos.X, minClampData.X, minClampData.Y);
+            canvasPos.Y = MathHelper.Clamp(canvasPos.Y, maxClampData.X, maxClampData.Y);
+
+            return canvasPos;
+        }
+
         public void DrawMe(SpriteBatch sBatch, List<Texture2D> tiles)
         {
             for (int x = 0; x < m_width; x++)
@@ -67,7 +81,9 @@ namespace DungeonEscape
             {
                 case 1:
                 case 3:
+                    return true;
                 case 4:
+                    Game1.gameState = Game1.gameState + 1;
                     return true;
                 default:
                     return false;

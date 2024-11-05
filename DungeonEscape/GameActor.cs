@@ -22,6 +22,8 @@ namespace DungeonEscape
         protected Point m_position;
         private Texture2D m_texture;
 
+        public Color Tint { get; set; }
+
         private int m_frameCount;
         private int m_animeFrame;
         private Rectangle m_sourceRect;
@@ -33,6 +35,7 @@ namespace DungeonEscape
 
         public Direction Facing
         {
+            get { return m_facing; }
             set
             {
                 m_facing = value;
@@ -49,6 +52,8 @@ namespace DungeonEscape
 
         public GameActor(Point startPos, Texture2D txr, int frameCount, int fps)
         {
+            Tint = Color.White;
+
             m_position = startPos;
             m_texture = txr;
 
@@ -127,14 +132,14 @@ namespace DungeonEscape
                 t = abs.X - (abs.Y >> 1);
                 do
                 {
-                    if (t > 0)
+                    if (t >= 0)
                     {
                         curr.X += sign.X;
                         t -= abs.Y;
                     }
 
                     curr.Y += sign.Y;
-                    t -= abs.Y;
+                    t += abs.X;
 
                     if (curr.X == target.X && curr.Y == target.Y)
                     {
@@ -147,7 +152,7 @@ namespace DungeonEscape
             }
         }
 
-        public void DrawMe(SpriteBatch sBatch, GameTime gt, int tileWidth, int tileHeight)
+        public virtual void DrawMe(SpriteBatch sBatch, GameTime gt, int tileWidth, int tileHeight)
         {
             m_updateTrigger += (float)gt.ElapsedGameTime.TotalSeconds * m_fps;
 
@@ -164,7 +169,7 @@ namespace DungeonEscape
             sBatch.Draw(m_texture,
                 new Vector2(m_position.X * tileWidth, m_position.Y * tileHeight - 4),
                 m_sourceRect,
-                Color.White,
+                Tint,
                 0f,
                 Vector2.Zero,
                 1f,

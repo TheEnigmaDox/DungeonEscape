@@ -4,32 +4,48 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using EnigmaUtils;
 
 namespace DungeonEscape
 {
+    public enum GameState
+    {
+        Title,
+        LevelOne,
+        LevelTwo,
+        LevelThree,
+        GameWin,
+        GameOver
+    }
+
     public class Game1 : Game
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
         public static readonly Random RNG = new Random();
-        public static readonly Point windowSize = new Point(960, 640);
+        public static readonly Point windowSize = new Point(480, 320);
 
         Vector2 screenCenter;
 
         RenderTarget2D drawCanvas;
 
-
         PlayerClass player1;
         Goblin guard;
 
         List<Texture2D> tiles;
-        int[,] testFloor;
-
+        
         Map currentMap;
 
         KeyboardState kb_curr;
         KeyboardState kb_old;
+
+        Vector2 canvasPos;
+
+        public static GameState gameState = GameState.Title;
+
+        EnigmaTextUtil titleText;
+        EnigmaTextUtil tooltip;
 
         //Matrix translation;
 
@@ -53,28 +69,6 @@ namespace DungeonEscape
         {
             // TODO: Add your initialization logic here
 
-            testFloor = new int[16, 16]
-            {
-                { 0, 0, 0, 7, 2, 2, 2, 8, 0, 0, 0, 0, 0, 0, 0, 0 },
-                { 0, 0, 0, 5, 1, 1, 1, 6, 0, 0, 0, 0, 0, 0, 0, 0 },
-                { 0, 7, 2, 2, 1, 1, 1, 6, 0, 0, 0, 0, 0, 0, 0, 0 },
-                { 0, 5, 1, 1, 1, 1, 1, 2, 2, 2, 8, 0, 7, 2, 2, 8 },
-                { 0, 5, 1, 6, 1, 1, 1, 1, 1, 1, 6, 0, 5, 3, 1, 6 },
-                { 0, 5, 1, 6, 1, 1, 1, 7, 8, 1, 6, 0, 5, 1, 1, 6 },
-                { 0, 5, 1, 8, 2, 2, 2, 5, 6, 1, 6, 0, 2, 7, 1, 6 },
-                { 7, 2, 1, 2, 2, 8, 0, 7, 2, 1, 2, 8, 0, 5, 1, 6 },
-                { 5, 1, 1, 1, 1, 6, 0, 5, 1, 1, 1, 6, 0, 5, 1, 6 },
-                { 5, 1, 1, 1, 1, 6, 0, 5, 1, 1, 1, 2, 2, 2, 1, 6 },
-                { 5, 1, 1, 1, 1, 6, 0, 5, 1, 1, 1, 1, 1, 1, 1, 6 },
-                { 5, 1, 1, 1, 1, 6, 0, 5, 1, 1, 1, 8, 2, 2, 2, 2 },
-                { 5, 1, 1, 1, 1, 6, 0, 5, 1, 1, 1, 6, 0, 0, 0, 0 },
-                { 2, 7, 2, 2, 1, 6, 0, 5, 1, 1, 1, 6, 0, 0, 0, 0 },
-                { 0, 5, 4, 1, 1, 6, 0, 2, 2, 2, 2, 2, 0, 0, 0, 0 },
-                { 0, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-            };
-
-            currentMap = new Map(testFloor);
-
             drawCanvas = new RenderTarget2D(_graphics.GraphicsDevice, 480, 320);
 
             screenCenter = new Vector2(windowSize.X / 2, windowSize.Y / 2);
@@ -91,6 +85,10 @@ namespace DungeonEscape
 #endif
 
             // TODO: use this.Content to load your game content here
+
+            titleText = new EnigmaTextUtil(Content.Load<SpriteFont>("Fonts/TitleFont"), windowSize.ToVector2() / 2);
+            tooltip = new EnigmaTextUtil(Content.Load<SpriteFont>("Fonts/ToolTip"), new Vector2(windowSize.X / 2,
+                windowSize.Y - Content.Load<SpriteFont>("Fonts/ToolTip").MeasureString("A").Y - 10));
 
             player1 = new PlayerClass(new Point(14, 4), Content.Load<Texture2D>("Characters/pc"), 3, 8);
             guard = new Goblin(new Point(5, 4), Content.Load<Texture2D>("Characters/goblin"), 3, 8);
@@ -116,33 +114,96 @@ namespace DungeonEscape
             if(kb_curr.IsKeyDown(Keys.Escape))
                 this.Exit();
 
-            //if(player1.LOS(guard.Position, currentMap))
-            //{
-            //    Debug.WriteLine("Spotted!");
-            //    this.Exit();
-            //}
+            switch (gameState)
+            {
+                case GameState.Title:
+                    UpdateTitle(gameTime, kb_curr, kb_old);
+                    break;
+                case GameState.LevelOne:
+                    if(!MapData.testFloorLoaded)
+                    {
+                        currentMap = new Map(MapData.testFloor);
+                        MapData.testFloorLoaded = true;
+                    }
+                    UpdateLevelOne(gameTime, kb_curr, kb_old);
+                    break;
+                case GameState.LevelTwo:
+                    if (!MapData.levelOneLoaded)
+                    {
+                        currentMap = new Map(MapData.levelOne);
+                        MapData.levelOneLoaded = true;
+                    }
+                    UpdateLevelTwo(gameTime);
+                    break;
+                case GameState.LevelThree:
+                    UpdateLevelThree();
+                    break;
+                case GameState.GameWin:
+                    UpdateGameWin();
+                    break;
+                case GameState.GameOver:
+                    UpdateGameOver();
+                    break;
+            }
 
-            Debug.WriteLine(guard.Position.ToString()); 
-
-            player1.UpdateMe(gameTime, currentMap, kb_curr, kb_old);
-            //guard.UpdateMe(gameTime, currentMap);
+            Debug.WriteLine(gameState);
 
             kb_old = kb_curr;
-
-            //CalculateTranslation();
 
             base.Update(gameTime);
         }
 
-        void CalculateTranslation()
+        void UpdateTitle(GameTime gt, KeyboardState kb_curr, KeyboardState kb_old)
         {
-            var dx = currentMap.MapSize.X - player1.PlayerPos.X;
-            dx = MathHelper.Clamp(dx, -500, 500);
+            tooltip.UpdateMe(gt);
 
-            var dy = currentMap.MapSize.Y - player1.PlayerPos.Y;
-            dy = MathHelper.Clamp(dy, -500, 500);
+            if(kb_curr.IsKeyDown(Keys.Enter) && kb_old.IsKeyUp(Keys.Enter))
+            {
+                gameState = GameState.LevelOne;
+            }
+        }
 
-            //translation = Matrix.CreateTranslation(dx, dy, 0f);
+        void UpdateLevelOne(GameTime gt, KeyboardState kb_curr, KeyboardState kb_old)
+        {
+            player1.UpdateMe(gt, currentMap, kb_curr, kb_old);
+            guard.UpdateMe(gt, currentMap, player1.Position);
+
+            MoveCanvas();
+
+            if(kb_curr.IsKeyDown(Keys.Space) && kb_old.IsKeyUp(Keys.Space))
+            {
+                gameState = GameState.LevelTwo;
+            }
+        }
+
+        void UpdateLevelTwo(GameTime gt)
+        {
+            player1.UpdateMe(gt, currentMap, kb_curr, kb_old);
+            guard.UpdateMe(gt, currentMap, player1.Position);
+
+            MoveCanvas();
+        }
+
+        void UpdateLevelThree()
+        {
+            
+        }
+
+        void UpdateGameWin()
+        {
+            
+        }
+
+        void UpdateGameOver()
+        {
+            
+        }
+
+        void MoveCanvas()
+        {
+            canvasPos = screenCenter - player1.PlayerPos.ToVector2() * 32;
+
+            canvasPos = currentMap.UpdateMe(canvasPos);
         }
 
         protected override void Draw(GameTime gameTime)
@@ -151,28 +212,30 @@ namespace DungeonEscape
 
             // TODO: Add your drawing code here
 
-            GraphicsDevice.SetRenderTarget(drawCanvas);
+            
             _spriteBatch.Begin();
 
-            currentMap.DrawMe(_spriteBatch, tiles);
-
-            player1.DrawMe(_spriteBatch, gameTime, tiles[0].Width, tiles[0].Height);
-            //guard.DrawMe(_spriteBatch, gameTime, tiles[0].Width, tiles[0].Height);
-
-            _spriteBatch.End();
-
-            GraphicsDevice.SetRenderTarget(null);
-            _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-            _spriteBatch.Draw(drawCanvas,
-                screenCenter - player1.PlayerPos.ToVector2(), 
-                null,
-                Color.White,
-                0, 
-                Vector2.Zero,
-                2, 
-                SpriteEffects.None,
-                1);
-
+            switch (gameState)
+            {
+                case GameState.Title:
+                    DrawTitle(_spriteBatch);
+                    break;
+                case GameState.LevelOne:
+                    DrawLevelOne(gameTime);
+                    break;
+                case GameState.LevelTwo:
+                    DrawLevelTwo(gameTime);
+                    break;
+                case GameState.LevelThree:
+                    DrawLevelThree(_spriteBatch);
+                    break;
+                case GameState.GameWin:
+                    DrawGameWin(_spriteBatch);
+                    break;
+                case GameState.GameOver:
+                    DrawGameOver(_spriteBatch);
+                    break;
+            }
 
 #if DEBUG
             _spriteBatch.DrawString(debugFont,
@@ -184,6 +247,79 @@ namespace DungeonEscape
             _spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        void DrawTitle(SpriteBatch sBatch)
+        {
+            titleText.DrawString(sBatch, "Dungeon Escape");
+            tooltip.DrawString(sBatch, "Press Enter to start!");
+        }
+
+        void DrawLevelOne(GameTime gt)
+        {
+            GraphicsDevice.SetRenderTarget(drawCanvas);
+            if (MapData.testFloorLoaded)
+            {
+                currentMap.DrawMe(_spriteBatch, tiles); 
+            }
+
+            player1.DrawMe(_spriteBatch, gt, tiles[0].Width, tiles[0].Height);
+            guard.DrawMe(_spriteBatch, gt, tiles[0].Width, tiles[0].Height);
+
+            _spriteBatch.End();
+
+            GraphicsDevice.SetRenderTarget(null);
+            _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+            _spriteBatch.Draw(drawCanvas,
+                canvasPos,
+                null,
+                Color.White,
+                0,
+                Vector2.Zero,
+                2,
+                SpriteEffects.None,
+                1);
+        }
+
+        void DrawLevelTwo(GameTime gt)
+        {
+            GraphicsDevice.SetRenderTarget(drawCanvas);
+            if (MapData.levelOneLoaded)
+            {
+                currentMap.DrawMe(_spriteBatch, tiles);
+            }
+
+            player1.DrawMe(_spriteBatch, gt, tiles[0].Width, tiles[0].Height);
+            guard.DrawMe(_spriteBatch, gt, tiles[0].Width, tiles[0].Height);
+
+            _spriteBatch.End();
+
+            GraphicsDevice.SetRenderTarget(null);
+            _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+            _spriteBatch.Draw(drawCanvas,
+                canvasPos,
+                null,
+                Color.White,
+                0,
+                Vector2.Zero,
+                2,
+                SpriteEffects.None,
+                1);
+        }
+
+        void DrawLevelThree(SpriteBatch sBatch)
+        {
+            tooltip.DrawString(sBatch, "Level Three");
+        }
+
+        void DrawGameWin(SpriteBatch sBatch)
+        {
+            tooltip.DrawString(sBatch, "GAME WIN!");
+        }
+
+        void DrawGameOver(SpriteBatch sBatch)
+        {
+            tooltip.DrawString(sBatch, "GAME OVER!");
         }
     }
 }
