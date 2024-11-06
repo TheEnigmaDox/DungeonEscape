@@ -48,6 +48,10 @@ namespace DungeonEscape
             {
                 return m_position;
             }
+            set
+            {
+                m_position = value;
+            }
         }
 
         public GameActor(Point startPos, Texture2D txr, int frameCount, int fps)

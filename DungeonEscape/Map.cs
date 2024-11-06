@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace DungeonEscape
 {
@@ -37,16 +38,13 @@ namespace DungeonEscape
             }
         }
 
-        public Vector2 UpdateMe(Vector2 canvasPos)
+        public Vector2 UpdateMe(Vector2 canvasPos, Vector2 minClamp, Vector2 maxClamp)
         {
             // 16, 16 -> 2, 6 (x32) -> 64, 192  -> -48 (3/4), -192
             // 24, 24 -> 3, 9 (x32) -> 96, 224
 
-            Vector2 minClampData = MapData.levelOneMinClamp;
-            Vector2 maxClampData = MapData.levelOneMaxClamp;
-
-            canvasPos.X = MathHelper.Clamp(canvasPos.X, minClampData.X, minClampData.Y);
-            canvasPos.Y = MathHelper.Clamp(canvasPos.Y, maxClampData.X, maxClampData.Y);
+            canvasPos.X = MathHelper.Clamp(canvasPos.X, minClamp.X, maxClamp.X);
+            canvasPos.Y = MathHelper.Clamp(canvasPos.Y, minClamp.Y, maxClamp.Y);
 
             return canvasPos;
         }

@@ -31,7 +31,7 @@ namespace DungeonEscape
         RenderTarget2D drawCanvas;
 
         PlayerClass player1;
-        Goblin guard;
+        List<Goblin> guards;
 
         List<Texture2D> tiles;
         
@@ -69,9 +69,11 @@ namespace DungeonEscape
         {
             // TODO: Add your initialization logic here
 
-            drawCanvas = new RenderTarget2D(_graphics.GraphicsDevice, 480, 320);
+            drawCanvas = new RenderTarget2D(_graphics.GraphicsDevice, 480, 480);
 
             screenCenter = new Vector2(windowSize.X / 2, windowSize.Y / 2);
+
+            guards = new List<Goblin>();
 
             base.Initialize();
         }
@@ -90,8 +92,8 @@ namespace DungeonEscape
             tooltip = new EnigmaTextUtil(Content.Load<SpriteFont>("Fonts/ToolTip"), new Vector2(windowSize.X / 2,
                 windowSize.Y - Content.Load<SpriteFont>("Fonts/ToolTip").MeasureString("A").Y - 10));
 
-            player1 = new PlayerClass(new Point(14, 4), Content.Load<Texture2D>("Characters/pc"), 3, 8);
-            guard = new Goblin(new Point(5, 4), Content.Load<Texture2D>("Characters/goblin"), 3, 8);
+            player1 = new PlayerClass(new Point(5, 4), Content.Load<Texture2D>("Characters/pc"), 3, 8);
+            guards = MapData.LevelOneGuardsData(guards, Content.Load<Texture2D>("Characters/goblin"));
 
             tiles = new List<Texture2D>();
             tiles.Add(Content.Load<Texture2D>("Tiles/void"));       //0
@@ -103,6 +105,8 @@ namespace DungeonEscape
             tiles.Add(Content.Load<Texture2D>("Tiles/wallR"));      //6
             tiles.Add(Content.Load<Texture2D>("Tiles/wallTL"));     //7
             tiles.Add(Content.Load<Texture2D>("Tiles/wallTR"));     //8
+            tiles.Add(Content.Load<Texture2D>("Tiles/voidwallL"));  //9
+            tiles.Add(Content.Load<Texture2D>("Tiles/voidwallR"));  //10
         }
 
         protected override void Update(GameTime gameTime)
@@ -120,23 +124,58 @@ namespace DungeonEscape
                     UpdateTitle(gameTime, kb_curr, kb_old);
                     break;
                 case GameState.LevelOne:
-                    if(!MapData.testFloorLoaded)
+                    if(!MapData.levelOneLoaded)
                     {
-                        currentMap = new Map(MapData.testFloor);
-                        MapData.testFloorLoaded = true;
+                        currentMap = new Map(MapData.levelOne);
+                        MapData.levelOneLoaded = true;
+
+                        if (!MapData.playerStartOne)
+                        {
+                            player1.Position = new Point(13, 4);
+                            MapData.playerStartOne = true;
+                        }
                     }
                     UpdateLevelOne(gameTime, kb_curr, kb_old);
                     break;
                 case GameState.LevelTwo:
-                    if (!MapData.levelOneLoaded)
+                    if (!MapData.levelTwoLoaded)
                     {
-                        currentMap = new Map(MapData.levelOne);
-                        MapData.levelOneLoaded = true;
+                        currentMap = new Map(MapData.levelTwo);
+                        MapData.levelTwoLoaded = true;
+
+                        if (!MapData.playerStartTwo)
+                        {
+                            player1.Position = new Point(2, 21);
+                            MapData.playerStartTwo = true;
+                        }
+
+                        if (!MapData.guardsTwo)
+                        {
+                            guards = MapData.LevelTwoGuardsData(guards, Content.Load<Texture2D>("Characters/goblin"));
+                            MapData.guardsTwo = true;
+                        }
                     }
                     UpdateLevelTwo(gameTime);
                     break;
                 case GameState.LevelThree:
-                    UpdateLevelThree();
+                    if (!MapData.levelThreeLoaded)
+                    {
+                        currentMap = new Map(MapData.levelThree);
+                        MapData.levelThreeLoaded = true;
+
+                        if (!MapData.playerStartThree)
+                        {
+                            player1.Position = new Point(25, 23);
+                            MapData.playerStartThree = true;
+                        }
+
+                        //if (!MapData.guardsTwo)
+                        //{
+                        //    guards = MapData.LevelTwoGuardsData(guards, Content.Load<Texture2D>("Characters/goblin"));
+                        //    MapData.guardsTwo = true;
+                        //}
+                    }
+                    UpdateLevelThree(gameTime);
                     break;
                 case GameState.GameWin:
                     UpdateGameWin();
@@ -146,7 +185,7 @@ namespace DungeonEscape
                     break;
             }
 
-            Debug.WriteLine(gameState);
+            //Debug.WriteLine(gameState);
 
             kb_old = kb_curr;
 
@@ -166,27 +205,45 @@ namespace DungeonEscape
         void UpdateLevelOne(GameTime gt, KeyboardState kb_curr, KeyboardState kb_old)
         {
             player1.UpdateMe(gt, currentMap, kb_curr, kb_old);
-            guard.UpdateMe(gt, currentMap, player1.Position);
+            //foreach(Goblin eachGuard in guards)
+            //{
+            //    eachGuard.UpdateMe(gt, currentMap, player1.Position);
+            //}
 
-            MoveCanvas();
+            MoveCanvas(MapData.levelOneMinClamp, MapData.levelOneMaxClamp);
 
             if(kb_curr.IsKeyDown(Keys.Space) && kb_old.IsKeyUp(Keys.Space))
             {
                 gameState = GameState.LevelTwo;
             }
+
+            Debug.WriteLine(canvasPos);
         }
 
         void UpdateLevelTwo(GameTime gt)
         {
             player1.UpdateMe(gt, currentMap, kb_curr, kb_old);
-            guard.UpdateMe(gt, currentMap, player1.Position);
 
-            MoveCanvas();
+            //foreach (Goblin eachGuard in guards)
+            //{
+            //    eachGuard.UpdateMe(gt, currentMap, player1.Position);
+            //}
+
+            MoveCanvas(MapData.levelTwoMinClamp, MapData.levelTwoMaxClamp);
+
+            if (kb_curr.IsKeyDown(Keys.Space) && kb_old.IsKeyUp(Keys.Space))
+            {
+                gameState = GameState.LevelThree;
+            }
+
+            
         }
 
-        void UpdateLevelThree()
+        void UpdateLevelThree(GameTime gt)
         {
-            
+            player1.UpdateMe(gt, currentMap, kb_curr, kb_old);
+
+            MoveCanvas(MapData.levelThreeMinClamp, MapData.levelThreeMaxClamp);
         }
 
         void UpdateGameWin()
@@ -199,11 +256,11 @@ namespace DungeonEscape
             
         }
 
-        void MoveCanvas()
+        void MoveCanvas(Vector2 minClamp, Vector2 maxClamp)
         {
             canvasPos = screenCenter - player1.PlayerPos.ToVector2() * 32;
 
-            canvasPos = currentMap.UpdateMe(canvasPos);
+            canvasPos = currentMap.UpdateMe(canvasPos, minClamp, maxClamp);
         }
 
         protected override void Draw(GameTime gameTime)
@@ -227,7 +284,7 @@ namespace DungeonEscape
                     DrawLevelTwo(gameTime);
                     break;
                 case GameState.LevelThree:
-                    DrawLevelThree(_spriteBatch);
+                    DrawLevelThree(gameTime);
                     break;
                 case GameState.GameWin:
                     DrawGameWin(_spriteBatch);
@@ -258,13 +315,17 @@ namespace DungeonEscape
         void DrawLevelOne(GameTime gt)
         {
             GraphicsDevice.SetRenderTarget(drawCanvas);
-            if (MapData.testFloorLoaded)
+            if (MapData.levelOneLoaded)
             {
                 currentMap.DrawMe(_spriteBatch, tiles); 
             }
 
             player1.DrawMe(_spriteBatch, gt, tiles[0].Width, tiles[0].Height);
-            guard.DrawMe(_spriteBatch, gt, tiles[0].Width, tiles[0].Height);
+
+            foreach (Goblin eachGuard in guards)
+            {
+                eachGuard.DrawMe(_spriteBatch, gt, tiles[0].Width, tiles[0].Height);
+            }
 
             _spriteBatch.End();
 
@@ -284,13 +345,17 @@ namespace DungeonEscape
         void DrawLevelTwo(GameTime gt)
         {
             GraphicsDevice.SetRenderTarget(drawCanvas);
-            if (MapData.levelOneLoaded)
+            if (MapData.levelTwoLoaded)
             {
                 currentMap.DrawMe(_spriteBatch, tiles);
             }
 
             player1.DrawMe(_spriteBatch, gt, tiles[0].Width, tiles[0].Height);
-            guard.DrawMe(_spriteBatch, gt, tiles[0].Width, tiles[0].Height);
+
+            foreach(Goblin eachGuard in guards)
+            {
+                eachGuard.DrawMe(_spriteBatch, gt, tiles[0].Width, tiles[0].Height);
+            }
 
             _spriteBatch.End();
 
@@ -307,9 +372,34 @@ namespace DungeonEscape
                 1);
         }
 
-        void DrawLevelThree(SpriteBatch sBatch)
+        void DrawLevelThree(GameTime gt)
         {
-            tooltip.DrawString(sBatch, "Level Three");
+            GraphicsDevice.SetRenderTarget(drawCanvas);
+            if (MapData.levelThreeLoaded)
+            {
+                currentMap.DrawMe(_spriteBatch, tiles);
+            }
+
+            player1.DrawMe(_spriteBatch, gt, tiles[0].Width, tiles[0].Height);
+
+            //foreach (Goblin eachGuard in guards)
+            //{
+            //    eachGuard.DrawMe(_spriteBatch, gt, tiles[0].Width, tiles[0].Height);
+            //}
+
+            _spriteBatch.End();
+
+            GraphicsDevice.SetRenderTarget(null);
+            _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+            _spriteBatch.Draw(drawCanvas,
+                canvasPos,
+                null,
+                Color.White,
+                0,
+                Vector2.Zero,
+                2,
+                SpriteEffects.None,
+                1);
         }
 
         void DrawGameWin(SpriteBatch sBatch)
