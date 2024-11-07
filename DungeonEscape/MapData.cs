@@ -117,7 +117,7 @@ namespace DungeonEscape
             { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
         };
 
-        public static Vector2 levelOneMinClamp = new Vector2(-32, -160);
+        public static Vector2 levelOneMinClamp = new Vector2(-32, -196);
         public static Vector2 levelOneMaxClamp = new Vector2(0, 0);
 
         public static Vector2 levelTwoMinClamp = new Vector2(-272, -448);
@@ -144,7 +144,7 @@ namespace DungeonEscape
             if(guardList.Count != levelOneGuards)
             {
                 guardList.Add(new Goblin(new Point(5, 2), goblinTxr, 3, 8));
-                guardList.Add(new Goblin(new Point(9, 12), goblinTxr, 3, 8));
+                //guardList.Add(new Goblin(new Point(9, 12), goblinTxr, 3, 8));
             }
 
             return guardList;

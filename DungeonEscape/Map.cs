@@ -65,10 +65,10 @@ namespace DungeonEscape
                         SpriteEffects.None,
                         0f);
 
-                    sBatch.DrawString(Game1.debugFont,
-                        m_Cells[x, y].ToString(),
-                        new Vector2(x * 16, y * 16),
-                        Color.White);
+                    //sBatch.DrawString(Game1.debugFont,
+                    //    m_Cells[x, y].ToString(),
+                    //    new Vector2(x * 16, y * 16),
+                    //    Color.White);
                 }
             }
         }

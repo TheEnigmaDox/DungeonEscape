@@ -33,7 +33,7 @@ namespace DungeonEscape
             m_state = GoblinState.Normal;
         }
 
-        public void UpdateMe(GameTime gt, Map currentMap, Point playerPos)
+        public void UpdateMe(GameTime gt, Map currentMap, PlayerClass player)
         {
             //m_position = m_startPoint;
 
@@ -67,48 +67,60 @@ namespace DungeonEscape
                 }
             }
 
-            CheckLOS(playerPos, currentMap);
+            CheckLOS(player, currentMap);
 
             // Debug.WriteLine(moveDir);
         }
 
-        void CheckLOS(Point playerPos, Map currentMap)
+        void CheckLOS(PlayerClass player, Map currentMap)
         {
+            var distance = (player.Position - Position).ToVector2().Length();
+
+            Debug.WriteLine(distance);
+
             m_state = GoblinState.Normal;
 
-            if (moveDir == Direction.North && playerPos.Y < m_position.Y)
+            if (moveDir == Direction.North && player.Position.Y < m_position.Y)
             {
-                if (LOS(playerPos, currentMap))
+                if (LOS(player.Position, currentMap) && distance < 4)
                 {
                     m_state = GoblinState.Alert;
-                    Game1.gameState = GameState.GameOver;
+                    //Game1.gameState = GameState.GameOver;
+
+                    player.HasBeenSpotted = true;
                 }
             }
 
-            if(moveDir == Direction.South && playerPos.Y > m_position.Y)
+            if(moveDir == Direction.South && player.Position.Y > m_position.Y)
             {
-                if(LOS(playerPos, currentMap))
+                if(LOS(player.Position, currentMap) && distance < 4)
                 {
                     m_state = GoblinState.Alert;
-                    Game1.gameState = GameState.GameOver;
+                    //Game1.gameState = GameState.GameOver;
+
+                    player.HasBeenSpotted = true;
                 }
             }
 
-            if(moveDir == Direction.West && playerPos.X < m_position.X)
+            if(moveDir == Direction.West && player.Position.X < m_position.X)
             {
-                if(LOS(playerPos, currentMap))
+                if(LOS(player.Position, currentMap) && distance < 4)
                 {
                     m_state = GoblinState.Alert;
-                    Game1.gameState = GameState.GameOver;
+                    //Game1.gameState = GameState.GameOver;
+
+                    player.HasBeenSpotted = true;
                 }
             }
 
-            if(moveDir == Direction.East && playerPos.X > m_position.X)
+            if(moveDir == Direction.East && player.Position.X > m_position.X)
             {
-                if(LOS(playerPos, currentMap))
+                if(LOS(player.Position, currentMap) && distance < 4)
                 {
                     m_state = GoblinState.Alert;
-                    Game1.gameState = GameState.GameOver;
+                    //Game1.gameState = GameState.GameOver;
+
+                    player.HasBeenSpotted = true;
                 }
             }
 

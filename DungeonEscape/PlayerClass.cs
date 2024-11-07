@@ -7,6 +7,14 @@ namespace DungeonEscape
 {
     internal class PlayerClass : GameActor
     {
+        private bool spotted = false;
+
+        public bool HasBeenSpotted
+        {
+            get { return spotted; }
+            set { spotted = value; }
+        }
+
         public Point PlayerPos
         {
             get
