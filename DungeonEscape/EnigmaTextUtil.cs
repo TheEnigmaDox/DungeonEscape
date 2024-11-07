@@ -11,6 +11,14 @@ namespace EnigmaUtils
         private float alpha = 0.75f;
         private float  alphaChange = 0.6f;
 
+        public float ColorAlpha
+        {
+            set
+            {
+                alpha = value;
+            }
+        }
+
         public EnigmaTextUtil(SpriteFont font, Vector2 position)
         {
             m_font = font;

@@ -130,10 +130,13 @@ namespace DungeonEscape
         public static bool playerStartTwo = false;
         public static bool playerStartThree = false;
 
+        public static bool guardsOne = false;
         public static bool guardsTwo = false;
+        public static bool guardsThree = false;
 
         static int levelOneGuards = 2;
         static int levelTwoGuards = 5;
+        static int levelThreeGuards = 7;
 
         public static List<Goblin> LevelOneGuardsData(List<Goblin> guardList, Texture2D goblinTxr)
         {
@@ -144,7 +147,7 @@ namespace DungeonEscape
             if(guardList.Count != levelOneGuards)
             {
                 guardList.Add(new Goblin(new Point(5, 2), goblinTxr, 3, 8));
-                //guardList.Add(new Goblin(new Point(9, 12), goblinTxr, 3, 8));
+                guardList.Add(new Goblin(new Point(9, 12), goblinTxr, 3, 8));
             }
 
             return guardList;
@@ -158,7 +161,7 @@ namespace DungeonEscape
 
             if (guardList.Count != levelTwoGuards)
             {
-                guardList.Add(new Goblin(new Point(5, 3), goblinTxr, 3, 8));
+                guardList.Add(new Goblin(new Point(9, 12), goblinTxr, 3, 8));
                 guardList.Add(new Goblin(new Point(17, 14), goblinTxr, 3, 8));
                 guardList.Add(new Goblin(new Point(15, 21), goblinTxr, 3, 8));
                 guardList.Add(new Goblin(new Point(5, 9), goblinTxr, 3, 8));
@@ -166,6 +169,41 @@ namespace DungeonEscape
             }
 
             return guardList;
+        }
+
+        public static List<Goblin> LevelThreeGuardsData(List<Goblin> guardList, Texture2D goblinTxr)
+        {
+            guardList.Clear();
+
+            guardList = new List<Goblin>();
+
+            if (guardList.Count != levelThreeGuards)
+            {
+                guardList.Add(new Goblin(new Point(3, 3), goblinTxr, 3, 8));
+                guardList.Add(new Goblin(new Point(3, 12), goblinTxr, 3, 8));
+                guardList.Add(new Goblin(new Point(15, 3), goblinTxr, 3, 8));
+                guardList.Add(new Goblin(new Point(24, 7), goblinTxr, 3, 8));
+                guardList.Add(new Goblin(new Point(18, 27), goblinTxr, 3, 8));
+                guardList.Add(new Goblin(new Point(4, 26), goblinTxr, 3, 8));
+                guardList.Add(new Goblin(new Point(19, 25), goblinTxr, 3, 8));
+            }
+
+            return guardList;
+        }
+
+        public static void ResetGame()
+        {
+            levelOneLoaded = false;
+            levelTwoLoaded = false;
+            levelThreeLoaded = false;
+
+            playerStartOne = false;
+            playerStartTwo = false;
+            playerStartThree = false;
+
+            guardsOne = false;
+            guardsTwo = false;
+            guardsThree = false;
         }
     }
 }

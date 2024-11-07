@@ -73,7 +73,7 @@ namespace DungeonEscape
             }
         }
 
-        public bool IsWalkable(Point idx)
+        public bool IsWalkable(Point idx, bool isPlayer)
         {
             switch(m_Cells[idx.X, idx.Y])
             {
@@ -81,7 +81,10 @@ namespace DungeonEscape
                 case 3:
                     return true;
                 case 4:
-                    Game1.gameState = Game1.gameState + 1;
+                    if (isPlayer)
+                    {
+                        Game1.gameState = Game1.gameState + 1;
+                    }
                     return true;
                 default:
                     return false;

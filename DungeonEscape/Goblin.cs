@@ -48,16 +48,16 @@ namespace DungeonEscape
                 switch (moveDir)
                 {
                     case Direction.North:
-                        legalMove = currentMap.IsWalkable(new Point(Position.X, Position.Y - 1));
+                        legalMove = currentMap.IsWalkable(new Point(Position.X, Position.Y - 1), false);
                         break;
                     case Direction.South:
-                        legalMove = currentMap.IsWalkable(new Point(Position.X, Position.Y + 1));
+                        legalMove = currentMap.IsWalkable(new Point(Position.X, Position.Y + 1), false);
                         break;
                     case Direction.West:
-                        legalMove = currentMap.IsWalkable(new Point(Position.X - 1, Position.Y));
+                        legalMove = currentMap.IsWalkable(new Point(Position.X - 1, Position.Y), false);
                         break;
                     case Direction.East:
-                        legalMove = currentMap.IsWalkable(new Point(Position.X + 1, Position.Y));
+                        legalMove = currentMap.IsWalkable(new Point(Position.X + 1, Position.Y), false);
                         break;
                 }
 

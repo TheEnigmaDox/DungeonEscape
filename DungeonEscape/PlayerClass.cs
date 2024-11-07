@@ -36,28 +36,28 @@ namespace DungeonEscape
         {
             if (kb_curr.IsKeyDown(Keys.W) && kb_old.IsKeyUp(Keys.W))
             {
-                if (currentMap.IsWalkable(new Point(Position.X, Position.Y - 1)))
+                if (currentMap.IsWalkable(new Point(Position.X, Position.Y - 1), true))
                 {
                     MoveMe(Direction.North);
                 }
             }
             if (kb_curr.IsKeyDown(Keys.S) && kb_old.IsKeyUp(Keys.S))
             {
-                if (currentMap.IsWalkable(new Point(Position.X, Position.Y + 1)))
+                if (currentMap.IsWalkable(new Point(Position.X, Position.Y + 1), true))
                 {
                     MoveMe(Direction.South); 
                 }
             }
             if (kb_curr.IsKeyDown(Keys.A) && kb_old.IsKeyUp(Keys.A))
             {
-                if (currentMap.IsWalkable(new Point(Position.X - 1, Position.Y)))
+                if (currentMap.IsWalkable(new Point(Position.X - 1, Position.Y),true))
                 {
                     MoveMe(Direction.West);
                 }
             }
             if (kb_curr.IsKeyDown(Keys.D) && kb_old.IsKeyUp(Keys.D))
             {
-                if (currentMap.IsWalkable(new Point(Position.X + 1, Position.Y)))
+                if (currentMap.IsWalkable(new Point(Position.X + 1, Position.Y), true))
                 {
                     MoveMe(Direction.East);
                 }

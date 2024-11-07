@@ -127,7 +127,7 @@ namespace DungeonEscape
                         return true;
                     }
                 }
-                while (currMap.IsWalkable(curr));
+                while (currMap.IsWalkable(curr, false));
 
                 return false;
             }
@@ -150,7 +150,7 @@ namespace DungeonEscape
                         return true;
                     }
                 }
-                while(currMap.IsWalkable(curr));
+                while(currMap.IsWalkable(curr, false));
 
                 return false;
             }

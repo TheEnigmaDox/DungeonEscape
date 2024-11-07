@@ -14,7 +14,6 @@ namespace DungeonEscape
         LevelOne,
         LevelTwo,
         LevelThree,
-        Spotted,
         GameWin,
         GameOver
     }
@@ -51,8 +50,6 @@ namespace DungeonEscape
 
         EnigmaTextUtil titleText;
         EnigmaTextUtil tooltip;
-
-        //Matrix translation;
 
 #if DEBUG
         public static SpriteFont debugFont;
@@ -130,7 +127,7 @@ namespace DungeonEscape
             switch (gameState)
             {
                 case GameState.Title:
-                    UpdateTitle(gameTime, kb_curr, kb_old);
+                    UpdateTitle(gameTime);
                     break;
                 case GameState.LevelOne:
                     if(!MapData.levelOneLoaded)
@@ -144,7 +141,13 @@ namespace DungeonEscape
                             MapData.playerStartOne = true;
                         }
                     }
-                    UpdateLevelOne(gameTime, kb_curr, kb_old);
+
+                    if (!MapData.guardsOne)
+                    {
+                        guards = MapData.LevelOneGuardsData(guards, Content.Load<Texture2D>("Characters/goblin"));
+                        MapData.guardsOne = true;
+                    }
+                    UpdateLevelOne(gameTime);
                     break;
                 case GameState.LevelTwo:
                     if (!MapData.levelTwoLoaded)
@@ -178,33 +181,28 @@ namespace DungeonEscape
                             MapData.playerStartThree = true;
                         }
 
-                        //if (!MapData.guardsTwo)
-                        //{
-                        //    guards = MapData.LevelTwoGuardsData(guards, Content.Load<Texture2D>("Characters/goblin"));
-                        //    MapData.guardsTwo = true;
-                        //}
+                        if (!MapData.guardsThree)
+                        {
+                            guards = MapData.LevelThreeGuardsData(guards, Content.Load<Texture2D>("Characters/goblin"));
+                            MapData.guardsThree = true;
+                        }
                     }
                     UpdateLevelThree(gameTime);
                     break;
-                case GameState.Spotted:
-                    UpdateSpotted();
-                        break;
                 case GameState.GameWin:
-                    UpdateGameWin();
+                    UpdateGameWin(gameTime);
                     break;
                 case GameState.GameOver:
-                    UpdateGameOver();
+                    UpdateGameOver(gameTime);
                     break;
             }
-
-            //Debug.WriteLine(gameState);
 
             kb_old = kb_curr;
 
             base.Update(gameTime);
         }
 
-        void UpdateTitle(GameTime gt, KeyboardState kb_curr, KeyboardState kb_old)
+        void UpdateTitle(GameTime gt)
         {
             tooltip.UpdateMe(gt);
 
@@ -214,7 +212,7 @@ namespace DungeonEscape
             }
         }
 
-        void UpdateLevelOne(GameTime gt, KeyboardState kb_curr, KeyboardState kb_old)
+        void UpdateLevelOne(GameTime gt)
         {
             player1.UpdateMe(gt, currentMap, kb_curr, kb_old);
 
@@ -248,8 +246,6 @@ namespace DungeonEscape
             {
                 gameState = GameState.LevelTwo;
             }
-
-            Debug.WriteLine(canvasPos);
         }
 
         void UpdateLevelTwo(GameTime gt)
@@ -263,6 +259,26 @@ namespace DungeonEscape
 
             MoveCanvas(MapData.levelTwoMinClamp, MapData.levelTwoMaxClamp);
 
+
+            if (player1.HasBeenSpotted)
+            {
+                shadowAlpha += (float)gt.ElapsedGameTime.TotalSeconds;
+
+                player1.HasBeenSpotted = false;
+
+                if (shadowAlpha > 1)
+                {
+                    gameState = GameState.GameOver;
+                }
+            }
+            else
+            {
+                if (shadowAlpha > 0)
+                {
+                    shadowAlpha -= (float)gt.ElapsedGameTime.TotalSeconds;
+                }
+            }
+
             if (kb_curr.IsKeyDown(Keys.Space) && kb_old.IsKeyUp(Keys.Space))
             {
                 gameState = GameState.LevelThree;
@@ -273,22 +289,75 @@ namespace DungeonEscape
         {
             player1.UpdateMe(gt, currentMap, kb_curr, kb_old);
 
+            if (player1.HasBeenSpotted)
+            {
+                shadowAlpha += (float)gt.ElapsedGameTime.TotalSeconds;
+
+                player1.HasBeenSpotted = false;
+
+                if (shadowAlpha > 1)
+                {
+                    gameState = GameState.GameOver;
+                }
+            }
+            else
+            {
+                if (shadowAlpha > 0)
+                {
+                    shadowAlpha -= (float)gt.ElapsedGameTime.TotalSeconds;
+                }
+            }
+
             MoveCanvas(MapData.levelThreeMinClamp, MapData.levelThreeMaxClamp);
+
+            foreach(Goblin eachGuard in guards)
+            {
+                eachGuard.UpdateMe(gt, currentMap, player1);
+            }
         }
 
-        void UpdateSpotted()
+        void UpdateGameWin(GameTime gt)
         {
-            
+            tooltip.UpdateMe(gt);
+
+            if (shadowAlpha > 0)
+            {
+                shadowAlpha -= (float)gt.ElapsedGameTime.TotalSeconds;
+            }
+            else if (shadowAlpha < 0)
+            {
+                shadowAlpha = 0;
+            }
+
+            if (kb_curr.IsKeyDown(Keys.Enter) && kb_old.IsKeyUp(Keys.Up))
+            {
+                MapData.ResetGame();
+                player1.Position = new Point(13, 4);
+                guards.Clear();
+                gameState = GameState.Title;
+            }
         }
 
-        void UpdateGameWin()
+        void UpdateGameOver(GameTime gt)
         {
-            
-        }
+            tooltip.UpdateMe(gt);
 
-        void UpdateGameOver()
-        {
-            
+            if (shadowAlpha > 0)
+            {
+                shadowAlpha -= (float)gt.ElapsedGameTime.TotalSeconds;
+            }
+            else if(shadowAlpha < 0)
+            {
+                shadowAlpha = 0;    
+            }
+
+            if(kb_curr.IsKeyDown(Keys.Enter) && kb_old.IsKeyUp(Keys.Up))
+            {
+                MapData.ResetGame();
+                player1.Position = new Point(13, 4);
+                guards.Clear();
+                gameState = GameState.Title; 
+            }
         }
 
         void MoveCanvas(Vector2 minClamp, Vector2 maxClamp)
@@ -300,7 +369,7 @@ namespace DungeonEscape
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.Black);
+            GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
 
@@ -320,9 +389,6 @@ namespace DungeonEscape
                     break;
                 case GameState.LevelThree:
                     DrawLevelThree(gameTime);
-                    break;
-                case GameState.Spotted:
-                    DrawSpotted();
                     break;
                 case GameState.GameWin:
                     DrawGameWin(_spriteBatch);
@@ -410,6 +476,8 @@ namespace DungeonEscape
                 2,
                 SpriteEffects.None,
                 1);
+
+            _spriteBatch.Draw(shadowPixel, shadow, Color.Black * shadowAlpha);
         }
 
         void DrawLevelThree(GameTime gt)
@@ -422,10 +490,10 @@ namespace DungeonEscape
 
             player1.DrawMe(_spriteBatch, gt, tiles[0].Width, tiles[0].Height);
 
-            //foreach (Goblin eachGuard in guards)
-            //{
-            //    eachGuard.DrawMe(_spriteBatch, gt, tiles[0].Width, tiles[0].Height);
-            //}
+            foreach (Goblin eachGuard in guards)
+            {
+                eachGuard.DrawMe(_spriteBatch, gt, tiles[0].Width, tiles[0].Height);
+            }
 
             _spriteBatch.End();
 
@@ -440,21 +508,23 @@ namespace DungeonEscape
                 2,
                 SpriteEffects.None,
                 1);
-        }
 
-        void DrawSpotted()
-        {
-
+            _spriteBatch.Draw(shadowPixel, shadow, Color.Black * shadowAlpha);
         }
 
         void DrawGameWin(SpriteBatch sBatch)
         {
-            tooltip.DrawString(sBatch, "GAME WIN!");
+            titleText.DrawString(sBatch, "GAME WIN!");
+            tooltip.DrawString(sBatch, "Press Enter to return to title");
+            _spriteBatch.Draw(shadowPixel, shadow, Color.Black * shadowAlpha);
         }
 
         void DrawGameOver(SpriteBatch sBatch)
         {
-            tooltip.DrawString(sBatch, "GAME OVER!");
+            titleText.DrawString(sBatch, "GAME OVER!");
+            tooltip.DrawString(sBatch, "Press Enter to return to title");
+
+            _spriteBatch.Draw(shadowPixel, shadow, Color.Black * shadowAlpha);
         }
     }
 }
