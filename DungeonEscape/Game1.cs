@@ -205,10 +205,10 @@ namespace DungeonEscape
         void UpdateLevelOne(GameTime gt, KeyboardState kb_curr, KeyboardState kb_old)
         {
             player1.UpdateMe(gt, currentMap, kb_curr, kb_old);
-            //foreach(Goblin eachGuard in guards)
-            //{
-            //    eachGuard.UpdateMe(gt, currentMap, player1.Position);
-            //}
+            foreach (Goblin eachGuard in guards)
+            {
+                eachGuard.UpdateMe(gt, currentMap, player1.Position);
+            }
 
             MoveCanvas(MapData.levelOneMinClamp, MapData.levelOneMaxClamp);
 
@@ -224,10 +224,10 @@ namespace DungeonEscape
         {
             player1.UpdateMe(gt, currentMap, kb_curr, kb_old);
 
-            //foreach (Goblin eachGuard in guards)
-            //{
-            //    eachGuard.UpdateMe(gt, currentMap, player1.Position);
-            //}
+            foreach (Goblin eachGuard in guards)
+            {
+                eachGuard.UpdateMe(gt, currentMap, player1.Position);
+            }
 
             MoveCanvas(MapData.levelTwoMinClamp, MapData.levelTwoMaxClamp);
 
@@ -235,8 +235,6 @@ namespace DungeonEscape
             {
                 gameState = GameState.LevelThree;
             }
-
-            
         }
 
         void UpdateLevelThree(GameTime gt)
